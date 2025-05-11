@@ -36,7 +36,8 @@ export interface TaskDefinition {
 export interface ActiveTask {
   id: TaskId;
   assignedPikmin: number;
-  progress?: number; // for one-time tasks, 0-100
+  progress: number; // for one-time tasks, 0-100
+  started: boolean;
 }
 
 export interface Resources {

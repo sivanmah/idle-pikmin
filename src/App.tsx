@@ -16,24 +16,60 @@ function App() {
   const [gameView, setGameView] = useState<GameView>("base");
   const [tick, setTick] = useState(0);
 
+  //consolelogger
+  /*
+  useEffect(() => {
+    console.log(resources);
+    console.log(activeTasks);
+    console.log(unlocks);
+    console.log(getIdlePikmin());
+  }, [resources, unlocks, activeTasks, getIdlePikmin]);
+  */
+
   useEffect(() => {
     const interval = setInterval(() => {
       setTick((t) => t + 1);
-
-      setResources((prev) => {
-        const updates = { ...prev };
-
-        // Every 3 seconds, each idle pikmin collects 1 pellet
-        if (tick % 3 === 0) {
-          updates.pellets += getIdlePikmin() * 1;
-        }
-
-        return updates;
-      });
     }, 1000);
 
     return () => clearInterval(interval);
-  });
+  }, []);
+
+  useEffect(() => {
+    setResources((prev) => {
+      const updates = { ...prev };
+
+      // Every 3 seconds, each idle pikmin collects 1 pellet
+      if (tick % 3 === 0) {
+        updates.pellets += getIdlePikmin() * 1;
+      }
+
+      return updates;
+    });
+
+    // look for tasks that are started
+    setActiveTasks((prev) => {
+      const updatedTasks = prev.map((task) => {
+        if (!task.started) return task;
+
+        // update every other tick
+        if (tick % 2 === 0 && task.progress < 100) {
+          const newProgress = Math.min(
+            task.progress + task.assignedPikmin * 2,
+            100
+          );
+          return {
+            ...task,
+            progress: newProgress,
+          };
+        }
+        // no update needed
+        return task;
+      });
+
+      // remove finished tasks
+      return updatedTasks.filter((task) => task.progress < 100);
+    });
+  }, [tick]);
 
   useEffect(() => {
     // filter unlockDefinitions for objects where conditions are met, such as resources gained and if the unlock has been activated yet or not take their id and put them in a newUnlocks array
@@ -64,6 +100,8 @@ function App() {
       const newActiveTasks: ActiveTask[] = tasksConditionMet.map((task) => ({
         id: task.id,
         assignedPikmin: 0,
+        progress: 0,
+        started: false,
       }));
       setActiveTasks([...activeTasks, ...newActiveTasks]);
     }
@@ -104,8 +142,18 @@ function App() {
     const task = activeTasks.find((t) => t.id === taskId);
     if (task) {
       setActiveTasks((prev) =>
-        prev.map((t) => ({ ...t, assignedPikmin: t.assignedPikmin + 1 }))
+        prev.map((t) =>
+          t.id === taskId ? { ...t, assignedPikmin: t.assignedPikmin + 1 } : t
+        )
       );
+
+      const taskDef = taskDefinition.find((t) => t.id === taskId);
+      if (task.assignedPikmin >= taskDef!.minPikmin) {
+        task.started = true;
+        setActiveTasks((prev) =>
+          prev.map((t) => (t.id === taskId ? { ...t, started: true } : t))
+        );
+      }
     }
   }
 
