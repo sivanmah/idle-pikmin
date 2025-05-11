@@ -1,5 +1,3 @@
-import { taskDefinition } from "./systems/tasks";
-
 export type UnlockId = "pikmin" | "pda" | "nectar";
 
 export type UnlockRecord = Partial<Record<UnlockId, boolean>>;
