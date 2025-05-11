@@ -6,6 +6,8 @@ import { unlockDefinitions } from "./systems/unlocks";
 import { taskDefinition } from "./systems/tasks";
 
 function App() {
+  const isDebug = import.meta.env.DEV;
+
   const [resources, setResources] = useState<Resources>({
     pikmin: 0,
     pellets: 1,
@@ -69,6 +71,7 @@ function App() {
       // remove finished tasks
       return updatedTasks.filter((task) => task.progress < 100);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tick]);
 
   useEffect(() => {
@@ -196,13 +199,15 @@ function App() {
             unlocks={unlocks}
             idlePikmin={getIdlePikmin()}
           />
-          <button
-            onClick={() =>
-              setResources({ ...resources, pellets: resources.pellets + 500 })
-            }
-          >
-            cheat pellets
-          </button>
+          {isDebug && (
+            <button
+              onClick={() =>
+                setResources({ ...resources, pellets: resources.pellets + 500 })
+              }
+            >
+              cheat pellets
+            </button>
+          )}
           <div className="h-full w-full p-4">{renderView()}</div>
         </div>
       </div>
