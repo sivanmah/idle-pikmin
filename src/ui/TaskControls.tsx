@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ActiveTask, TaskDefinition } from "../types";
 
 interface TaskControlProps {
@@ -5,6 +6,7 @@ interface TaskControlProps {
   activeTask: ActiveTask;
   onAssign: () => void;
   onUnassign: () => void;
+  onTaskComplete: () => void;
 }
 
 export default function TaskControls({
@@ -12,7 +14,14 @@ export default function TaskControls({
   activeTask,
   onAssign,
   onUnassign,
+  onTaskComplete,
 }: TaskControlProps) {
+  useEffect(() => {
+    if (activeTask.progress >= 100) {
+      onTaskComplete();
+    }
+  }, [activeTask, onTaskComplete]);
+
   return (
     <div className="p-1 w-80 text-center border bg-gray-200  disabled:cursor-default disabled:hover:bg-gray-200">
       <span>

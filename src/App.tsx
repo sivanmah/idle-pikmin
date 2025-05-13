@@ -4,7 +4,7 @@ import BaseView from "./BaseView";
 import { ActiveTask, GameView, Resources, UnlockRecord } from "./types";
 import { unlockDefinitions } from "./systems/unlocks";
 import { taskDefinition } from "./systems/tasks";
-import { button } from "framer-motion/client";
+import { PDA } from "./PDA";
 
 function App() {
   const isDebug = import.meta.env.DEV;
@@ -69,8 +69,7 @@ function App() {
         return task;
       });
 
-      // remove finished tasks
-      return updatedTasks.filter((task) => task.progress < 100);
+      return updatedTasks;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tick]);
@@ -195,6 +194,18 @@ function App() {
     }
   }
 
+  function handleTaskComplete(taskId: string) {
+    const taskDef = taskDefinition.find((t) => t.id === taskId);
+    setUnlocks((prev) => ({
+      ...prev,
+      // as keyof typeof prev so typescript knows its a valid type
+      [taskDef!.unlock as keyof typeof prev]: true,
+    }));
+
+    // remove the finished task
+    setActiveTasks((prev) => prev.filter((t) => t.id != taskId));
+  }
+
   function renderView() {
     if (gameView === "base")
       return (
@@ -205,16 +216,25 @@ function App() {
           onSpend={(resource, amount) => spendResource(resource, amount)}
           handleAssign={handleAssign}
           handleUnassign={handleUnassign}
+          handleTaskComplete={handleTaskComplete}
         />
       );
     else if (gameView === "map") return "map view";
     else if (gameView === "settings") return "settings view";
   }
 
+  function handleViewChange(): string {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <div className="m-0 p-0 flex h-screen justify-center">
       <div className="w-1/2 h-full">
-        <div className="w-full h-1/12 border-b-2">PDA</div>
+        <div className="w-full h-1/12 border-b-2">
+          {unlocks.pda && (
+            <PDA unlocks={unlocks} onViewChange={() => handleViewChange()} />
+          )}
+        </div>
         <div className="w-full h-10/12 flex">
           <ResourceBar
             resources={resources}

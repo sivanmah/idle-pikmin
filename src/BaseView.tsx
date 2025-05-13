@@ -11,6 +11,7 @@ interface BaseViewProps {
   onSpend: (resource: keyof Resources, amount: number) => void;
   handleAssign: (taskId: string) => void;
   handleUnassign: (taskId: string) => void;
+  handleTaskComplete: (taskId: string) => void;
 }
 
 export default function BaseView({
@@ -20,6 +21,7 @@ export default function BaseView({
   onSpend,
   handleAssign,
   handleUnassign,
+  handleTaskComplete,
 }: BaseViewProps) {
   function pikminCost(totalPikmin: Resources["pikmin"]) {
     const cost = 1 * 2.2 ** totalPikmin;
@@ -48,6 +50,7 @@ export default function BaseView({
             <TaskControls
               onAssign={() => handleAssign(activeTask.id)}
               onUnassign={() => handleUnassign(activeTask.id)}
+              onTaskComplete={() => handleTaskComplete(activeTask.id)}
               taskDef={taskDef}
               activeTask={activeTask}
             />

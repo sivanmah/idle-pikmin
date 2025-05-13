@@ -8,6 +8,6 @@ export const taskDefinition: TaskDefinition[] = [
     minPikmin: 5,
     duration: 60,
     unlock: "pda",
-    revealCondition: (unlocks) => unlocks.pikmin === true,
+    revealCondition: (unlocks) => !!unlocks.pikmin && !unlocks.pda,
   },
 ];
