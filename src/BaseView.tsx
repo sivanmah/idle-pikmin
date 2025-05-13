@@ -2,6 +2,7 @@ import { ActiveTask, Resources } from "./types";
 import Button from "./ui/Button";
 import TaskControls from "./ui/TaskControls";
 import { taskDefinition } from "./systems/tasks";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface BaseViewProps {
   resources: Resources;
@@ -39,13 +40,18 @@ export default function BaseView({
         const taskDef = taskDefinition.find((t) => t.id === activeTask.id)!;
 
         return (
-          <TaskControls
+          <motion.div
             key={activeTask.id}
-            onAssign={() => handleAssign(activeTask.id)}
-            onUnassign={() => handleUnassign(activeTask.id)}
-            taskDef={taskDef}
-            activeTask={activeTask}
-          />
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <TaskControls
+              onAssign={() => handleAssign(activeTask.id)}
+              onUnassign={() => handleUnassign(activeTask.id)}
+              taskDef={taskDef}
+              activeTask={activeTask}
+            />
+          </motion.div>
         );
       });
     }
@@ -62,7 +68,7 @@ export default function BaseView({
           Gather pikmin ({pikminCost(resources.pikmin)} pellets)
         </Button>
       </div>
-      <div>{renderTasks()}</div>
+      <AnimatePresence>{renderTasks()}</AnimatePresence>
     </div>
   );
 }

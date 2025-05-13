@@ -4,6 +4,7 @@ import BaseView from "./BaseView";
 import { ActiveTask, GameView, Resources, UnlockRecord } from "./types";
 import { unlockDefinitions } from "./systems/unlocks";
 import { taskDefinition } from "./systems/tasks";
+import { button } from "framer-motion/client";
 
 function App() {
   const isDebug = import.meta.env.DEV;
@@ -221,13 +222,28 @@ function App() {
             idlePikmin={getIdlePikmin()}
           />
           {isDebug && (
-            <button
-              onClick={() =>
-                setResources({ ...resources, pellets: resources.pellets + 500 })
-              }
-            >
-              cheat pellets
-            </button>
+            <>
+              <button
+                onClick={() =>
+                  setResources({
+                    ...resources,
+                    pellets: resources.pellets + 500,
+                  })
+                }
+              >
+                cheat pellets
+              </button>
+              <button
+                onClick={() =>
+                  setResources({
+                    ...resources,
+                    pikmin: resources.pikmin + 10,
+                  })
+                }
+              >
+                cheat pikmin
+              </button>
+            </>
           )}
           <div className="h-full w-full p-4">{renderView()}</div>
         </div>
