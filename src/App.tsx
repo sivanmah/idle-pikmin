@@ -75,6 +75,10 @@ function App() {
   }, [tick]);
 
   useEffect(() => {
+    activeTasks.map((task) => triggerActiveTask(task));
+  }, [activeTasks]);
+
+  useEffect(() => {
     // filter unlockDefinitions for objects where conditions are met, such as resources gained and if the unlock has been activated yet or not take their id and put them in a newUnlocks array
     const newUnlocks = unlockDefinitions
       .filter((obj) => obj.condition(resources, unlocks))
@@ -110,6 +114,23 @@ function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unlocks]);
+
+  function triggerActiveTask(task: ActiveTask) {
+    const taskDef = taskDefinition.find((t) => t.id === task.id);
+    setActiveTasks((prev) => {
+      return prev.map((t) => {
+        if (t.id === task.id) {
+          if (
+            (task.started && t.assignedPikmin < taskDef!.minPikmin) ||
+            (!task.started && t.assignedPikmin >= taskDef!.minPikmin)
+          ) {
+            return { ...t, started: !t.started };
+          }
+        }
+        return t;
+      });
+    });
+  }
 
   function gatherResource(resource: keyof Resources, amount: number) {
     setResources((prevResources) => ({
