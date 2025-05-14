@@ -75,40 +75,40 @@ function App() {
   }, [tick]);
 
   useEffect(() => {
-    // filter unlockDefinitions for objects where conditions are met, such as resources gained and if the unlock has been activated yet or not take their id and put them in a newUnlocks array
-    const newUnlocks = unlockDefinitions
-      .filter((obj) => obj.condition(resources, unlocks))
-      .map((obj) => obj.id);
+    setUnlocks((prev) => {
+      // filter unlockDefinitions for objects where conditions are met, such as resources gained and if the unlock has been activated yet or not take their id and put them in a newUnlocks array
+      const newUnlocks = unlockDefinitions
+        .filter((obj) => obj.condition(resources, prev))
+        .map((obj) => obj.id);
 
-    // if any conditions are found to be met, update the state
-    if (newUnlocks.length > 0) {
-      setUnlocks((prev) => {
-        const updates = {} as UnlockRecord;
-        newUnlocks.forEach((id) => {
-          updates[id] = true;
-        });
-        return { ...prev, ...updates };
+      if (newUnlocks.length === 0) return prev;
+
+      const updates: UnlockRecord = {};
+      newUnlocks.forEach((id) => {
+        updates[id] = true;
       });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+      return { ...prev, ...updates };
+    });
   }, [resources]);
 
   useEffect(() => {
-    // also update activetasks according to defined taskreveal in taskdefinition
-    const tasksConditionMet = taskDefinition.filter((obj) =>
-      obj.revealCondition(unlocks)
-    );
+    setActiveTasks((prev) => {
+      // also update activetasks according to defined reveal condition, and if its already in activetasks or not
+      const tasksConditionMet = taskDefinition.filter(
+        (obj) =>
+          obj.revealCondition(unlocks) && !prev.some((t) => t.id === obj.id)
+      );
+      if (tasksConditionMet.length === 0) return prev;
 
-    if (tasksConditionMet.length > 0) {
       const newActiveTasks: ActiveTask[] = tasksConditionMet.map((task) => ({
         id: task.id,
         assignedPikmin: 0,
         progress: 0,
         started: false,
       }));
-      setActiveTasks([...activeTasks, ...newActiveTasks]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      return [...prev, ...newActiveTasks];
+    });
   }, [unlocks]);
 
   function gatherResource(resource: keyof Resources, amount: number) {
