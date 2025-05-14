@@ -75,10 +75,6 @@ function App() {
   }, [tick]);
 
   useEffect(() => {
-    activeTasks.map((task) => triggerActiveTask(task));
-  }, [activeTasks]);
-
-  useEffect(() => {
     // filter unlockDefinitions for objects where conditions are met, such as resources gained and if the unlock has been activated yet or not take their id and put them in a newUnlocks array
     const newUnlocks = unlockDefinitions
       .filter((obj) => obj.condition(resources, unlocks))
@@ -115,23 +111,6 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unlocks]);
 
-  function triggerActiveTask(task: ActiveTask) {
-    const taskDef = taskDefinition.find((t) => t.id === task.id);
-    setActiveTasks((prev) => {
-      return prev.map((t) => {
-        if (t.id === task.id) {
-          if (
-            (task.started && t.assignedPikmin < taskDef!.minPikmin) ||
-            (!task.started && t.assignedPikmin >= taskDef!.minPikmin)
-          ) {
-            return { ...t, started: !t.started };
-          }
-        }
-        return t;
-      });
-    });
-  }
-
   function gatherResource(resource: keyof Resources, amount: number) {
     setResources((prevResources) => ({
       ...prevResources,
@@ -157,41 +136,24 @@ function App() {
     return resources.pikmin - busyPikmin;
   }
 
-  function handleAssign(taskId: string) {
-    const idlePikmin = getIdlePikmin();
-    if (idlePikmin < 1) {
-      return;
-    }
+  function handleTaskOperation(taskId: string, pikminDelta: number) {
+    if (pikminDelta > 0 && getIdlePikmin() < pikminDelta) return;
 
-    const task = activeTasks.find((t) => t.id === taskId);
-    if (task) {
-      setActiveTasks((prev) =>
-        prev.map((t) =>
-          t.id === taskId ? { ...t, assignedPikmin: t.assignedPikmin + 1 } : t
-        )
-      );
+    const task = activeTasks.find((task) => task.id === taskId);
+    if (pikminDelta < 0 && task!.assignedPikmin < pikminDelta * -1) return;
 
-      const taskDef = taskDefinition.find((t) => t.id === taskId);
-      if (task.assignedPikmin >= taskDef!.minPikmin) {
-        task.started = true;
-        setActiveTasks((prev) =>
-          prev.map((t) => (t.id === taskId ? { ...t, started: true } : t))
-        );
-      }
-    }
-  }
-
-  function handleUnassign(taskId: string) {
-    const task = activeTasks.find((t) => t.id === taskId);
-    if (task && task.assignedPikmin < 1) {
-      return;
-    }
-
-    if (task) {
-      setActiveTasks((prev) =>
-        prev.map((t) => ({ ...t, assignedPikmin: t.assignedPikmin - 1 }))
-      );
-    }
+    const taskDef = taskDefinition.find((task) => task.id === taskId);
+    setActiveTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== taskId) return t;
+        const newPikmin = t.assignedPikmin + pikminDelta;
+        return {
+          ...t,
+          assignedPikmin: newPikmin,
+          started: newPikmin >= taskDef!.minPikmin,
+        };
+      })
+    );
   }
 
   function handleTaskComplete(taskId: string) {
@@ -214,8 +176,7 @@ function App() {
           activeTasks={activeTasks}
           onGather={(resource, amount) => gatherResource(resource, amount)}
           onSpend={(resource, amount) => spendResource(resource, amount)}
-          handleAssign={handleAssign}
-          handleUnassign={handleUnassign}
+          onTaskOperation={handleTaskOperation}
           handleTaskComplete={handleTaskComplete}
         />
       );
