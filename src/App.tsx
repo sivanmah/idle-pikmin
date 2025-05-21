@@ -5,6 +5,7 @@ import { ActiveTask, GameView, Resources, UnlockRecord } from "./types";
 import { unlockDefinitions } from "./systems/unlocks";
 import { taskDefinition } from "./systems/tasks";
 import { PDA } from "./PDA";
+import Settings from "./Settings";
 
 function App() {
   const isDebug = import.meta.env.DEV;
@@ -181,11 +182,7 @@ function App() {
         />
       );
     else if (gameView === "map") return "map view";
-    else if (gameView === "settings") return "settings view";
-  }
-
-  function handleViewChange(): string {
-    throw new Error("Function not implemented.");
+    else if (gameView === "settings") return <Settings />;
   }
 
   return (
@@ -193,7 +190,7 @@ function App() {
       <div className="w-1/2 h-full">
         <div className="w-full h-1/12 border-b-2">
           {unlocks.pda && (
-            <PDA unlocks={unlocks} onViewChange={() => handleViewChange()} />
+            <PDA unlocks={unlocks} onViewChange={(view) => setGameView(view)} />
           )}
         </div>
         <div className="w-full h-10/12 flex">
